@@ -51,6 +51,7 @@ class BorrowingService
 
     public function returnBook(array $data)
     {
+        echo $data;
         $borrowing = Borrowing::where('client_id', $data['client_id'])
             ->where('book_id', $data['book_id'])
             ->where('status', 'borrowed')

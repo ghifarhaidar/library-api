@@ -8,9 +8,23 @@ use App\Services\BorrowingService;
 use App\Http\Resources\BorrowingResource;
 use App\Http\Requests\StoreBorrowingRequest;
 use App\Http\Requests\ReturnBookRequest;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class BorrowingController extends Controller
+class BorrowingController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:borrowings.view', only: ['index']),
+            new Middleware('permission:borrowings.create', only: ['store']),
+            new Middleware('permission:borrowings.view_details', only: ['show']),
+            new Middleware('permission:borrowings.update', only: ['returnBook']),
+            new Middleware('permission:borrowings.delete', only: ['destroy']),
+
+        ];
+    }
+
     public function __construct(protected BorrowingService $borrowingService)
     {
     }

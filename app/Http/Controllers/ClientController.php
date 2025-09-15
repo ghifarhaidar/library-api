@@ -2,26 +2,51 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreClientRequest;
+use App\Http\Requests\UpdateClientRequest;
+use App\Http\Resources\ClientResource;
 use App\Models\Client;
+use App\Services\ClientService;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class ClientController extends Controller
+class ClientController extends Controller implements HasMiddleware
 {
+
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:clients.view', only: ['index']),
+            new Middleware('permission:clients.create', only: ['store']),
+            new Middleware('permission:clients.view_details', only: ['show']),
+            new Middleware('permission:clients.update', only: ['update']),
+            new Middleware('permission:clients.delete', only: ['destroy']),
+
+        ];
+    }
+    public function __construct(protected ClientService $clientService)
+    {
+    }
+
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
+        $clients = $this->clientService->getAllClients();
+        return response()->json(['data' => ClientResource::collection($clients)], 200);
     }
 
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreClientRequest $request)
     {
-        //
+        $client = $this->clientService->createClient($request->validated());
+        return response()->json(['client' => new ClientResource($client)], 201);
     }
 
     /**
@@ -29,15 +54,17 @@ class ClientController extends Controller
      */
     public function show(Client $client)
     {
-        //
+        $client = $this->clientService->getClient($client);
+        return response()->json(['client' => new ClientResource($client)], 200);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Client $client)
+    public function update(UpdateClientRequest $request, Client $client)
     {
-        //
+        $client = $this->clientService->updateClient($client, $request->validated());
+        return response()->json(['client' => new ClientResource($client)], 200);
     }
 
     /**
@@ -45,6 +72,7 @@ class ClientController extends Controller
      */
     public function destroy(Client $client)
     {
-        //
+        $this->clientService->deleteClient($client);
+        return response()->json(['message' => 'Client deleted'], 204);
     }
 }
