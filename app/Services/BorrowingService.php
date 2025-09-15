@@ -51,22 +51,24 @@ class BorrowingService
 
     public function returnBook(array $data)
     {
-        echo $data;
         $borrowing = Borrowing::where('client_id', $data['client_id'])
             ->where('book_id', $data['book_id'])
+            ->whereNull('returned_at')
             ->where('status', 'borrowed')
             ->first();
 
         if (!$borrowing) {
-            return null;
+            throw new \Exception('No active borrowing found for this client and book.');
         }
 
         $borrowing->update([
-            'status' => 'returned',
-            'returned_at' => now()
+            'returned_at' => now(),
+            'status'      => 'returned',
         ]);
 
+        // Increment stock back
         $borrowing->book->increment('in_stock');
-        return $borrowing->load(['client', 'book']);
+
+        return $borrowing;
     }
 }
