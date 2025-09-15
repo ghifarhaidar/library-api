@@ -5,6 +5,7 @@ namespace App\Services;
 use Carbon\Carbon;
 use App\Models\Borrowing;
 use App\Models\Book;
+use Illuminate\Support\Facades\DB;
 
 
 class BorrowingService
@@ -17,24 +18,27 @@ class BorrowingService
 
     public function createBorrowing(array $data): Borrowing
     {
-        $book = Book::findOrFail($data['book_id']);
+        return DB::transaction(function () use ($data) {
 
-        // Check stock
-        if ($book->in_stock <= 0) {
-            throw new \Exception("This book is currently out of stock.");
-        }
+            $book = Book::findOrFail($data['book_id']);
 
-        // Set borrowed_at and due_at
-        $data['borrowed_at'] = $data['borrowed_at'] ?? Carbon::now()->toDateString();
-        $data['due_at'] = $data['due_at'] ?? Carbon::parse($data['borrowed_at'])->addDays(7)->toDateString();
+            // Check stock
+            if ($book->in_stock <= 0) {
+                throw new \Exception("This book is currently out of stock.");
+            }
 
-        // Create borrowing
-        $borrowing = Borrowing::create($data);
+            // Set borrowed_at and due_at
+            $data['borrowed_at'] = $data['borrowed_at'] ?? Carbon::now()->toDateString();
+            $data['due_at'] = $data['due_at'] ?? Carbon::parse($data['borrowed_at'])->addDays(7)->toDateString();
 
-        // Decrement book stock
-        $book->decrement('in_stock');
+            // Create borrowing
+            $borrowing = Borrowing::create($data);
 
-        return $borrowing->load(['client', 'book']);
+            // Decrement book stock
+            $book->decrement('in_stock');
+
+            return $borrowing->load(['client', 'book']);
+        });
     }
 
     public function getBorrowing(Borrowing $borrowing)
@@ -51,24 +55,27 @@ class BorrowingService
 
     public function returnBook(array $data)
     {
-        $borrowing = Borrowing::where('client_id', $data['client_id'])
-            ->where('book_id', $data['book_id'])
-            ->whereNull('returned_at')
-            ->where('status', 'borrowed')
-            ->first();
+        return DB::transaction(function () use ($data) {
 
-        if (!$borrowing) {
-            throw new \Exception('No active borrowing found for this client and book.');
-        }
+            $borrowing = Borrowing::where('client_id', $data['client_id'])
+                ->where('book_id', $data['book_id'])
+                ->whereNull('returned_at')
+                ->where('status', 'borrowed')
+                ->first();
 
-        $borrowing->update([
-            'returned_at' => now(),
-            'status'      => 'returned',
-        ]);
+            if (!$borrowing) {
+                throw new \Exception('No active borrowing found for this client and book.');
+            }
 
-        // Increment stock back
-        $borrowing->book->increment('in_stock');
+            $borrowing->update([
+                'returned_at' => now(),
+                'status'      => 'returned',
+            ]);
 
-        return $borrowing;
+            // Increment stock back
+            $borrowing->book->increment('in_stock');
+
+            return $borrowing;
+        });
     }
 }
