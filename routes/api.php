@@ -7,6 +7,7 @@ use App\Http\Controllers\BookController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\BorrowingController;
 
 use App\Http\Controllers\AuthController;
 
@@ -15,11 +16,14 @@ Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logo
 
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::patch('/borrowings/return', [BorrowingController::class, 'returnBook']);
+
     Route::apiResource('books', BookController::class);
     Route::apiResource('authors', AuthorController::class);
     Route::apiResource('clients', ClientController::class);
+    Route::apiResource('borrowings', BorrowingController::class);
     Route::apiResource('admins', UserController::class)
-    ->parameters(['admins' => 'user']);
+        ->parameters(['admins' => 'user']);
 });
 
 Route::get('/hello', function () {

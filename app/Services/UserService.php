@@ -10,7 +10,7 @@ class UserService
 
     public function getAllUsers()
     {
-        return User::all();
+        return User::get();
     }
 
     public function createUser(array $data)

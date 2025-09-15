@@ -22,4 +22,17 @@ class Book extends Model
     {
         return $this->belongsTo(Author::class);
     }
+
+
+    public function borrowings()
+    {
+        return $this->hasMany(Borrowing::class);
+    }
+    
+    public function borrowers()
+    {
+        return $this->belongsToMany(Client::class, 'borrowings')
+        ->withPivot('borrowed_at', 'due_at', 'returned_at', 'status')
+        ->withTimestamps();
+    }
 }
