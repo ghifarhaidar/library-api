@@ -10,8 +10,24 @@ use App\Services\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
-class UserController extends Controller
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+
+class UserController extends Controller implements HasMiddleware
 {
+
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:users.view', only: ['index']),
+            new Middleware('permission:users.create', only: ['store']),
+            new Middleware('permission:users.view_details', only: ['show']),
+            new Middleware('permission:users.update', only: ['update']),
+            new Middleware('permission:users.delete', only: ['destroy']),
+
+        ];
+    }
+
 
     public function __construct(protected UserService $userService)
     {

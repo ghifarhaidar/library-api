@@ -7,7 +7,6 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use App\Models\Book;
 use App\Models\Author;
-use App\Models\Admin;
 use App\Models\Client;
 
 
@@ -30,7 +29,13 @@ class DatabaseSeeder extends Seeder
             ->count(10)
             ->create();
 
-        User::factory()->count(3)->create();
         Client::factory()->count(50)->create();
+
+        $this->call([
+            RoleSeeder::class,
+            PermissionSeeder::class,
+            RolePermissionSeeder::class,
+            UserSeeder::class,
+        ]);
     }
 }
