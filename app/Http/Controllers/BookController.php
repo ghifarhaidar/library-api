@@ -33,17 +33,30 @@ class BookController extends Controller implements HasMiddleware
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $books = $this->bookService->getAllBooks();
-        return response()->json(['data' => BookResource::collection($books)], 200);
+        $books = $this->bookService->getAllBooks($request);
+        return response()->json(['data' => BookResource::collection($books),
+        'meta' => [
+            'current_page' => $books->currentPage(),
+            'last_page'    => $books->lastPage(),
+            'per_page'     => $books->perPage(),
+            'total'        => $books->total(),
+        ],
+        'links' => [
+            'first' => $books->url(1),
+            'last'  => $books->url($books->lastPage()),
+            'prev'  => $books->previousPageUrl(),
+            'next'  => $books->nextPageUrl(),
+        ],
+    ], 200);
     }
 
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreBookRequest $request)
     {
         $book = $this->bookService->createBook($request->validated());
         return response()->json(['book' => new BookResource($book)], 201);
@@ -62,7 +75,7 @@ class BookController extends Controller implements HasMiddleware
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Book $book)
+    public function update(UpdateBookRequest $request, Book $book)
     {
         $book = $this->bookService->updateBook($book, $request->validated());
         return response()->json(['book' => new BookResource($book)], 200);

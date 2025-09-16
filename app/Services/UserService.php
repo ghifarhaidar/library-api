@@ -3,14 +3,15 @@
 namespace App\Services;
 
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class UserService
 {
 
-    public function getAllUsers()
+    public function getAllUsers(Request $request)
     {
-        return User::get();
+        return User::paginate(10);
     }
 
     public function createUser(array $data)

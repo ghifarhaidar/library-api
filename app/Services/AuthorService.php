@@ -3,12 +3,20 @@
 namespace App\Services;
 
 use App\Models\Author;
+use Illuminate\Http\Request;
 
 class AuthorService
 {
-    public function getAllAuthors()
+    public function getAllAuthors(Request $request)
     {
-        return Author::with('books')->get();
+        $query = Author::with('books');
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%$search%");
+            });
+        }
+        return $query->paginate(10)->appends($request->query());
     }
 
     public function createAuthor(array $data): Author

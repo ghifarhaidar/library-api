@@ -33,10 +33,24 @@ class ClientController extends Controller implements HasMiddleware
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $clients = $this->clientService->getAllClients();
-        return response()->json(['data' => ClientResource::collection($clients)], 200);
+        $clients = $this->clientService->getAllClients($request);
+        return response()->json([
+            'data' => ClientResource::collection($clients),
+            'meta' => [
+                'current_page' => $clients->currentPage(),
+                'last_page'    => $clients->lastPage(),
+                'per_page'     => $clients->perPage(),
+                'total'        => $clients->total(),
+            ],
+            'links' => [
+                'first' => $clients->url(1),
+                'last'  => $clients->url($clients->lastPage()),
+                'prev'  => $clients->previousPageUrl(),
+                'next'  => $clients->nextPageUrl(),
+            ],
+        ], 200);
     }
 
 
@@ -46,7 +60,21 @@ class ClientController extends Controller implements HasMiddleware
     public function store(StoreClientRequest $request)
     {
         $client = $this->clientService->createClient($request->validated());
-        return response()->json(['client' => new ClientResource($client)], 201);
+        return response()->json([
+            'client' => new ClientResource($client),
+            'meta' => [
+                'current_page' => $client->currentPage(),
+                'last_page'    => $client->lastPage(),
+                'per_page'     => $client->perPage(),
+                'total'        => $client->total(),
+            ],
+            'links' => [
+                'first' => $client->url(1),
+                'last'  => $client->url($client->lastPage()),
+                'prev'  => $client->previousPageUrl(),
+                'next'  => $client->nextPageUrl(),
+            ],
+        ], 201);
     }
 
     /**

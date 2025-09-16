@@ -32,10 +32,24 @@ class AuthorController extends Controller implements HasMiddleware
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $authors = $this->authorService->getAllAuthors();
-        return response()->json(['data' => AuthorResource::collection($authors)], 200);
+        $authors = $this->authorService->getAllAuthors($request);
+        return response()->json([
+            'data' => AuthorResource::collection($authors),
+            'meta' => [
+                'current_page' => $authors->currentPage(),
+                'last_page'    => $authors->lastPage(),
+                'per_page'     => $authors->perPage(),
+                'total'        => $authors->total(),
+            ],
+            'links' => [
+                'first' => $authors->url(1),
+                'last'  => $authors->url($authors->lastPage()),
+                'prev'  => $authors->previousPageUrl(),
+                'next'  => $authors->nextPageUrl(),
+            ],
+        ], 200);
     }
 
     /**

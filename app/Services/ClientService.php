@@ -3,12 +3,20 @@
 namespace App\Services;
 
 use App\Models\Client;
+use Illuminate\Http\Request;
 
 class ClientService
 {
-    public function getAllClients()
+    public function getAllClients(Request $request)
     {
-        return Client::with('borrowedBooks')->get();
+        $query = Client::query();
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%$search%");
+            });
+        }
+        return $query->paginate(10)->appends($request->query());
     }
 
     public function createClient(array $data)

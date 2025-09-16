@@ -32,10 +32,24 @@ class BorrowingController extends Controller implements HasMiddleware
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $borrowings = $this->borrowingService->getAllBorrowings();
-        return response()->json(['data' => BorrowingResource::collection($borrowings)], 200);
+        $borrowings = $this->borrowingService->getAllBorrowings($request);
+        return response()->json([
+            'data' => BorrowingResource::collection($borrowings),
+            'meta' => [
+                'current_page' => $borrowings->currentPage(),
+                'last_page'    => $borrowings->lastPage(),
+                'per_page'     => $borrowings->perPage(),
+                'total'        => $borrowings->total(),
+            ],
+            'links' => [
+                'first' => $borrowings->url(1),
+                'last'  => $borrowings->url($borrowings->lastPage()),
+                'prev'  => $borrowings->previousPageUrl(),
+                'next'  => $borrowings->nextPageUrl(),
+            ],
+        ], 200);
     }
 
     /**
@@ -53,7 +67,21 @@ class BorrowingController extends Controller implements HasMiddleware
     public function show(Borrowing $borrowing)
     {
         $borrowing = $this->borrowingService->getBorrowing($borrowing);
-        return response()->json(['data' => new BorrowingResource($borrowing)], 201);
+        return response()->json([
+            'data' => new BorrowingResource($borrowing),
+            'meta' => [
+                'current_page' => $borrowing->currentPage(),
+                'last_page'    => $borrowing->lastPage(),
+                'per_page'     => $borrowing->perPage(),
+                'total'        => $borrowing->total(),
+            ],
+            'links' => [
+                'first' => $borrowing->url(1),
+                'last'  => $borrowing->url($borrowing->lastPage()),
+                'prev'  => $borrowing->previousPageUrl(),
+                'next'  => $borrowing->nextPageUrl(),
+            ],
+        ], 201);
     }
 
 

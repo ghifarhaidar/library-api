@@ -5,15 +5,16 @@ namespace App\Services;
 use Carbon\Carbon;
 use App\Models\Borrowing;
 use App\Models\Book;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 
 class BorrowingService
 {
 
-    public function getAllBorrowings()
+    public function getAllBorrowings(Request $request)
     {
-        return Borrowing::with(['client', 'book'])->get();
+        return Borrowing::with(['client', 'book'])->paginate(10)->appends($request->query());
     }
 
     public function createBorrowing(array $data): Borrowing

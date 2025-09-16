@@ -36,10 +36,24 @@ class UserController extends Controller implements HasMiddleware
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = $this->userService->getAllUsers();
-        return response()->json(['data' => UserResource::collection($users)], 200);
+        $users = $this->userService->getAllUsers($request);
+        return response()->json([
+            'data' => UserResource::collection($users),
+            'meta' => [
+                'current_page' => $users->currentPage(),
+                'last_page'    => $users->lastPage(),
+                'per_page'     => $users->perPage(),
+                'total'        => $users->total(),
+            ],
+            'links' => [
+                'first' => $users->url(1),
+                'last'  => $users->url($users->lastPage()),
+                'prev'  => $users->previousPageUrl(),
+                'next'  => $users->nextPageUrl(),
+            ],
+        ], 200);
     }
 
 
