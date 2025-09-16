@@ -8,6 +8,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\BorrowingController;
+use App\Http\Controllers\SuggestionController;
 
 use App\Http\Controllers\AuthController;
 
@@ -17,6 +18,9 @@ Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logo
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/borrowings/return', [BorrowingController::class, 'returnBook']);
+
+    Route::post('suggestionsForClient', [SuggestionController::class, 'suggestBookForClient']);
+    Route::post('suggestions', [SuggestionController::class, 'suggestBook']);
 
     Route::apiResource('books', BookController::class);
     Route::apiResource('authors', AuthorController::class);
