@@ -19,7 +19,6 @@ Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logo
 Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/borrowings/return', [BorrowingController::class, 'returnBook']);
 
-    Route::post('suggestionsForClient', [SuggestionController::class, 'suggestBookForClient']);
     Route::post('suggestions', [SuggestionController::class, 'suggestBook']);
 
     Route::apiResource('books', BookController::class);
